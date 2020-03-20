@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+   <meta name="Name" content="App Example: Defect List"/>
+   <title>Iteration Cumulative Flow Example</title>
+   <script type="text/javascript" src="/apps/1.26/sdk.js"></script>
+   <script>
+        var dropdown = null;
+        var table = null;
+        var rallyDataSource = null;
+
+        function displayFlow(results) {
+            var formattedDate = null;
+            for (var i=0; i < results.flows.length; i++) {
+                formattedDate = rally.sdk.util.DateTime.format(results.flows[i].CreationDate, "yyyy-MM-dd");
+                results.flows[i].FormattedDate = formattedDate;
+            }
+            var tableConfig = {
+                columnKeys: ['FormattedDate', 'CardState', 'CardCount', 'CardEstimateTotal'],
+                columnWidths: ['100px', '100px', '100px', '100px']
+            };
+            table = new rally.sdk.ui.Table(tableConfig);
+            table.addRows(results.flows);
+            table.display(document.getElementById('flowTable'));
+        };
+
+        function onIterationSelected() {
+            if(table) {
+                table.destroy();
+            }
+            var queryConfig = {
+                type: 'iterationcumulativeflowdata',
+                key: 'flows',
+                fetch: 'CreationDate,CardCount,CardEstimateTotal,CardState',
+                query: '(IterationObjectID = "' + dropdown.getSelectedOids()[0] + '")'
+            };
+            rallyDataSource.findAll(queryConfig, displayFlow);
+        }
+
+        function onLoad() {
+                rallyDataSource = new rally.sdk.data.RallyDataSource('__WORKSPACE_OID__',
+                '__PROJECT_OID__',
+                '__PROJECT_SCOPING_UP__',
+                '__PROJECT_SCOPING_DOWN__');
+
+            var dropdownConfig = {};
+            dropdown = new rally.sdk.ui.IterationDropdown(dropdownConfig, rallyDataSource);
+            dropdown.display(document.getElementById("dropdownDiv"), onIterationSelected);
+        }
+
+        rally.addOnLoad(onLoad);
+  </script>
+</head>
+<body>
+    <div id="dropdownDiv"></div>
+    <div id="flowTable"></div>
+</body>
+</html>
