@@ -4,11 +4,12 @@ require 'rally_api'
 require 'pp'
 require 'date'
 
-@config = {:base_url => "https://abrockett.testn.f4tech.com/slm"}
+#@config = {:base_url => "https://abrockett.testn.f4tech.com/slm"}
+@config = {:base_url => "https://rally1.rallydev.com/slm"}
 @config[:username]   = "abrockett@rallydev.com"
-@config[:password]   = "Password"
-@config[:workspace]  = "Rally"
-@config[:project]    = "Tally"
+@config[:password]   = "R4llyD3v7"
+@config[:workspace]  = "Hellfish DemoData Only"
+@config[:project]    = "AlanDemoData"
 
 def show_some_values(title, builddef)
   values = ["Name", "Description", "Project", "CreationDate"]
@@ -30,12 +31,11 @@ def find_build_defs()
   query.project_scope_up = false
   query.project_scope_down = false
   query.order = "CreationDate Desc"
-  query.query_string = "(Name = \"Hellfish\")"
+  query.query_string = "(Name = \"Tally Builds\")"
 
   results = @rally_api.find(query)
   results.each do |result|
-    show_some_values("Result", result)
-    puts result.ObjectID
+    puts result["_ref"]
   end
 end
 
@@ -53,21 +53,21 @@ end
 
 def create_builds(builddef)
   fields = {}
-  fields["BuildDefinition"] = builddef
+  fields["BuildDefinition"] = builddef["_ref"]
   fields["Duration"] = 1.5
   fields["Start"] = DateTime.new(2019, 8, 10, 4, 10, 9).iso8601
   fields["Status"] = "SUCCESS"
 
   new_build = @rally_api.create("build", fields)
-  puts new_build.inspect
+  puts new_build["_ref"] + " ... " + new_build["BuildDefinition"]._ref
 end
 
 begin
   @rally_api = RallyAPI::RallyRestJson.new(@config)
   @workspace = @rally_api.find_workspace(@config[:workspace])
   @project   = @rally_api.find_project(@workspace, @config[:project])
-  puts @workspace._ref
-  puts @project._ref
+  #puts @workspace._ref
+  #puts @project._ref
 
   builddef = create_build_defs
   create_builds(builddef)
